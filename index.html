@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Room Checklist</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Rooms</h2>
+    <ul id="roomList"></ul>
+  </div>
+
+  <div class="main">
+    <h1 id="roomTitle">Select a Room</h1>
+    <ul id="checklist"></ul>
+    <div id="notesContainer" style="display:none;">
+      <label for="notes">Notes:</label><br />
+      <textarea id="notes" rows="5" cols="40" placeholder="Enter notes here..."></textarea>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
