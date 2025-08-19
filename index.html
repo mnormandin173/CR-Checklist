@@ -8,12 +8,16 @@
 </head>
 <body>
   <div class="sidebar">
-    <h2>Rooms</h2>
+    <h2 id="todayDate"></h2>
+    <h3>Rooms</h3>
     <ul id="roomList"></ul>
   </div>
 
   <div class="main">
-    <h1 id="roomTitle">Select a Room</h1>
+    <div class="header">
+      <h1 id="roomTitle">Select a Room</h1>
+      <button id="saveBtn" title="Export to Excel">&#128190;</button>
+    </div>
     <ul id="checklist"></ul>
     <div id="notesContainer" style="display:none;">
       <label for="notes">Notes:</label><br />
