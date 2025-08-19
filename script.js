@@ -1,100 +1,96 @@
-const rooms = [
-  "Creative Dev Studio", "Hasbro Brand", "Twister", "Monopoly", "Sorry!", "Clue", "Megatron", "Magic",
-  "Tonka Truck", "Chance", "Piggy Bank", "University of Play", "Dugout", "HTO Command Center",
-  "Peppa Pig", "Mr. Potato Head", "Fun Factory", "Playskool Meet'n Room", "Tinker Tank", 
-  "Muddy Puddles", "Candy Land", "Jenga Den"
-];
-
-// Checklist items (only two checkboxes)
-const checklistItems = [
-  "Office supplies",
-  "Technology"
-];
-
-const roomList = document.getElementById('roomList');
-const checklist = document.getElementById('checklist');
-const roomTitle = document.getElementById('roomTitle');
-const notesContainer = document.getElementById('notesContainer');
-const notesInput = document.getElementById('notes');
-
-let currentRoom = null;
-
-function getTodayDate() {
-  return new Date().toISOString().split('T')[0];
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  height: 100vh;
+  background-color: #f4f4f4;
 }
 
-function resetIfNewDay(roomKey) {
-  const lastDate = localStorage.getItem(`${roomKey}_date`);
-  const today = getTodayDate();
-  if (lastDate !== today) {
-    localStorage.setItem(`${roomKey}_date`, today);
-    localStorage.removeItem(`${roomKey}_tasks`);
-    localStorage.removeItem(`${roomKey}_notes`);
-  }
+.sidebar {
+  width: 250px;
+  background: #333;
+  color: white;
+  padding: 1rem;
+  overflow-y: auto;
 }
 
-function saveTasks(roomKey, tasks) {
-  localStorage.setItem(`${roomKey}_tasks`, JSON.stringify(tasks));
+.sidebar h2, .sidebar h3 {
+  margin: 0 0 10px 0;
 }
 
-function saveNotes(roomKey, notes) {
-  localStorage.setItem(`${roomKey}_notes`, notes);
+.sidebar ul {
+  list-style: none;
+  padding: 0;
 }
 
-function loadRoom(roomName) {
-  currentRoom = roomName;
-  const roomKey = roomName.replace(/\s+/g, '_');
-
-  // Highlight active room
-  document.querySelectorAll('#roomList li').forEach(li => {
-    li.classList.toggle('active', li.textContent === roomName);
-  });
-
-  resetIfNewDay(roomKey);
-  roomTitle.textContent = roomName;
-
-  // Load saved checklist state
-  const savedTasks = JSON.parse(localStorage.getItem(`${roomKey}_tasks`)) || {};
-  checklist.innerHTML = '';
-
-  checklistItems.forEach((item, index) => {
-    const li = document.createElement('li');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = `task-${index}`;
-    checkbox.checked = savedTasks[index] || false;
-
-    checkbox.addEventListener('change', () => {
-      savedTasks[index] = checkbox.checked;
-      saveTasks(roomKey, savedTasks);
-    });
-
-    const label = document.createElement('label');
-    label.htmlFor = checkbox.id;
-    label.textContent = item;
-
-    li.appendChild(checkbox);
-    li.appendChild(label);
-    checklist.appendChild(li);
-  });
-
-  // Show notes field
-  notesContainer.style.display = 'block';
-  const savedNotes = localStorage.getItem(`${roomKey}_notes`) || '';
-  notesInput.value = savedNotes;
-
-  notesInput.oninput = () => {
-    saveNotes(roomKey, notesInput.value);
-  };
+.sidebar li {
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #444;
 }
 
-function setupRoomList() {
-  rooms.forEach(room => {
-    const li = document.createElement('li');
-    li.textContent = room;
-    li.addEventListener('click', () => loadRoom(room));
-    roomList.appendChild(li);
-  });
+.sidebar li:hover, .sidebar li.active {
+  background: #555;
 }
 
-setupRoomList();
+.main {
+  flex-grow: 1;
+  padding: 2rem;
+  background: #fff;
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#saveBtn {
+  background: #4CAF50;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#saveBtn:hover {
+  background: #45a049;
+}
+
+h1 {
+  margin: 0;
+}
+
+ul#checklist {
+  list-style: none;
+  padding: 0;
+  margin-top: 1.5rem;
+}
+
+#checklist li {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+}
+
+#notesContainer {
+  margin-top: 20px;
+}
+
+#notes {
+  width: 100%;
+  font-size: 1rem;
+  padding: 8px;
+  resize: vertical;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-family: Arial, sans-serif;
+}
