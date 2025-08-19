@@ -42,15 +42,12 @@ function loadRoom(roomName) {
   const roomKey = roomName.replace(/\s+/g, '_');
   const todayData = getTodayData();
 
-  // Highlight active room
   document.querySelectorAll('#roomList li').forEach(li => {
     li.classList.toggle('active', li.textContent === roomName);
   });
 
-  // Display only the room name in header
   roomTitle.textContent = roomName;
 
-  // Load saved checklist state
   const savedRoom = todayData[roomKey] || { tasks: {}, notes: "" };
   checklist.innerHTML = '';
 
@@ -75,7 +72,6 @@ function loadRoom(roomName) {
     checklist.appendChild(li);
   });
 
-  // Notes
   notesContainer.style.display = 'block';
   notesInput.value = savedRoom.notes;
 
@@ -93,56 +89,28 @@ function setupRoomList() {
   });
 }
 
-// Excel XML export with wrap text for notes and clean columns
+// Mobile-friendly CSV export
 saveBtn.addEventListener('click', () => {
   const today = getTodayDate();
   const data = getTodayData();
 
-  let xml = `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-          xmlns:o="urn:schemas-microsoft-com:office:office"
-          xmlns:x="urn:schemas-microsoft-com:office:excel"
-          xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-  <Styles>
-    <Style ss:ID="header"><Font ss:Bold="1"/></Style>
-    <Style ss:ID="wrapText"><Alignment ss:WrapText="1"/></Style>
-  </Styles>
-  <Worksheet ss:Name="Checklist">
-    <Table>
-      <Column ss:Width="150"/>
-      ${checklistItems.map(() => `<Column ss:Width="100"/>`).join('')}
-      <Column ss:Width="250"/>`;
+  let csv = ['Room Name', ...checklistItems, 'Notes'].join(',') + '\n';
 
-  // Header row
-  xml += `<Row ss:StyleID="header">`;
-  xml += `<Cell><Data ss:Type="String">Room Name</Data></Cell>`;
-  checklistItems.forEach(item => {
-    xml += `<Cell><Data ss:Type="String">${item}</Data></Cell>`;
-  });
-  xml += `<Cell><Data ss:Type="String">Notes</Data></Cell>`;
-  xml += `</Row>`;
-
-  // Data rows
   rooms.forEach(room => {
     const roomKey = room.replace(/\s+/g, '_');
     const roomData = data[roomKey] || { tasks: {}, notes: '' };
-
-    xml += `<Row>`;
-    xml += `<Cell><Data ss:Type="String">${room}</Data></Cell>`;
-    checklistItems.forEach((_, idx) => {
-      xml += `<Cell><Data ss:Type="String">${roomData.tasks[idx] ? '[X]' : '[ ]'}</Data></Cell>`;
-    });
-    xml += `<Cell ss:StyleID="wrapText"><Data ss:Type="String">${roomData.notes.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`;
-    xml += `</Row>`;
+    const row = [
+      `"${room}"`,
+      ...checklistItems.map((_, idx) => roomData.tasks[idx] ? 'X' : ' '),
+      `"${roomData.notes.replace(/"/g,'""')}"`
+    ];
+    csv += row.join(',') + '\n';
   });
 
-  xml += `</Table></Worksheet></Workbook>`;
-
-  const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+  const blob = new Blob([csv], { type: 'text/csv' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `${today}_checklist.xls`;
+  link.download = `${today}_checklist.csv`;
   link.click();
 });
 
