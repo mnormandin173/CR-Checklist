@@ -117,4 +117,47 @@ function exportToExcel() {
     const savedNotes = localStorage.getItem(`${roomKey}_notes`) || "";
 
     const row = [room];
-    checklistItems
+    checklistItems.forEach((_, index) => {
+      row.push(savedTasks[index] ? "✅" : ""); // leave blank if unchecked
+    });
+    row.push(savedNotes);
+
+    data.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Checklist");
+
+  XLSX.writeFile(wb, `Checklist_${today}.xlsx`);
+}
+
+saveBtn.addEventListener('click', exportToExcel);
+
+addRoomBtn.addEventListener('click', () => {
+  const newRoom = prompt("Enter new room name:");
+  if (newRoom) {
+    rooms.push(newRoom);
+    const li = document.createElement('li');
+    li.textContent = newRoom;
+    li.addEventListener('click', () => loadRoom(newRoom));
+    roomList.appendChild(li);
+  }
+});
+
+deleteRoomBtn.addEventListener('click', () => {
+  if (!currentRoom) return alert("Select a room to delete");
+  const index = rooms.indexOf(currentRoom);
+  if (index > -1) {
+    rooms.splice(index, 1);
+    document.querySelectorAll('#roomList li').forEach(li => {
+      if (li.textContent === currentRoom) li.remove();
+    });
+    currentRoom = null;
+    roomTitle.textContent = "Select a Room";
+    checklist.innerHTML = '';
+    notesContainer.style.display = 'none';
+  }
+});
+
+setupRoomList();
