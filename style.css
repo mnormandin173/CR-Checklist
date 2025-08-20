@@ -12,15 +12,18 @@ body {
   color: white;
   padding: 1rem;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.sidebar h2, .sidebar h3 {
-  margin: 0 0 10px 0;
+.sidebar h2 {
+  margin-top: 0;
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
+  flex-grow: 1;
 }
 
 .sidebar li {
@@ -29,8 +32,30 @@ body {
   border-bottom: 1px solid #444;
 }
 
-.sidebar li:hover, .sidebar li.active {
+.sidebar li:hover,
+.sidebar li.active {
   background: #555;
+}
+
+.sidebar-buttons {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-buttons button {
+  padding: 8px;
+  border: none;
+  background: #4CAF50;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.sidebar-buttons button:hover {
+  background: #45a049;
 }
 
 .main {
@@ -41,7 +66,7 @@ body {
 }
 
 h1 {
-  margin: 0 0 1.5rem 0;
+  margin-bottom: 1.5rem;
 }
 
 ul#checklist {
@@ -74,7 +99,6 @@ input[type="checkbox"] {
   font-family: Arial, sans-serif;
 }
 
-/* Fixed save button at bottom-right */
 #saveBtn {
   position: fixed;
   bottom: 20px;
