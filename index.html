@@ -10,6 +10,7 @@
   <div class="sidebar">
     <h2 id="todayDate"></h2>
     <ul id="roomList"></ul>
+
     <div class="sidebar-buttons">
       <button id="addRoomBtn">➕ Add Room</button>
       <button id="deleteRoomBtn">➖ Delete Room</button>
@@ -25,9 +26,10 @@
     </div>
   </div>
 
-  <!-- Save button fixed at bottom -->
-  <button id="saveBtn" title="Export to CSV">&#128190;</button>
+  <!-- Floating Save Button -->
+  <button id="saveBtn" class="save-btn">💾 Save</button>
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
