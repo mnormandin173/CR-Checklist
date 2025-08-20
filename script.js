@@ -51,7 +51,6 @@ function loadRoom(roomName) {
   currentRoom = roomName;
   const roomKey = roomName.replace(/\s+/g, "_");
 
-  // Highlight active room
   document.querySelectorAll('#roomList li').forEach(li => {
     li.classList.toggle('active', li.textContent === roomName);
   });
@@ -59,7 +58,6 @@ function loadRoom(roomName) {
   resetIfNewDay(roomKey);
   roomTitle.textContent = roomName;
 
-  // Load saved checklist state
   const savedTasks = JSON.parse(localStorage.getItem(`${roomKey}_tasks`)) || {};
   checklist.innerHTML = '';
 
@@ -84,7 +82,6 @@ function loadRoom(roomName) {
     checklist.appendChild(li);
   });
 
-  // Show notes field
   notesContainer.style.display = 'block';
   const savedNotes = localStorage.getItem(`${roomKey}_notes`) || '';
   notesInput.value = savedNotes;
@@ -151,8 +148,23 @@ saveBtn.addEventListener("click", () => {
   });
 
   const ws = XLSX.utils.aoa_to_sheet(ws_data);
-  XLSX.utils.book_append_sheet(wb, ws, "Checklist");
 
+  // Format header (bold)
+  checklistItems.forEach((_, i) => {
+    const cellRef = XLSX.utils.encode_cell({ r: 0, c: i + 1 });
+    if (!ws[cellRef]) ws[cellRef] = { t: "s", v: checklistItems[i] };
+    ws[cellRef].s = { font: { bold: true } };
+  });
+  ws["A1"].s = { font: { bold: true } };
+  ws[XLSX.utils.encode_cell({ r: 0, c: checklistItems.length + 1 })].s = { font: { bold: true } };
+
+  // Auto column widths
+  const colWidths = ws_data[0].map((_, colIndex) =>
+    Math.max(...ws_data.map(row => (row[colIndex] ? row[colIndex].toString().length : 0))) + 2
+  );
+  ws["!cols"] = colWidths.map(w => ({ wch: w }));
+
+  XLSX.utils.book_append_sheet(wb, ws, "Checklist");
   XLSX.writeFile(wb, `${getTodayDateKey()}_Checklist.xlsx`);
 });
 
