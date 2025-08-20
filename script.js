@@ -135,3 +135,26 @@ document.getElementById("deleteRoomBtn").addEventListener("click", () => {
 // ✅ Export to Excel
 saveBtn.addEventListener("click", () => {
   const wb = XLSX.utils.book_new();
+  const ws_data = [["Room", ...checklistItems, "Notes"]];
+
+  rooms.forEach(room => {
+    const roomKey = room.replace(/\s+/g, "_");
+    const savedTasks = JSON.parse(localStorage.getItem(`${roomKey}_tasks`)) || {};
+    const savedNotes = localStorage.getItem(`${roomKey}_notes`) || "";
+
+    const row = [room];
+    checklistItems.forEach((_, i) => {
+      row.push(savedTasks[i] ? "✅" : "❌");
+    });
+    row.push(savedNotes);
+    ws_data.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  XLSX.utils.book_append_sheet(wb, ws, "Checklist");
+
+  XLSX.writeFile(wb, `${getTodayDateKey()}_Checklist.xlsx`);
+});
+
+// ✅ Initialize
+setupRoomList();
