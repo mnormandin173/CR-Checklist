@@ -5,7 +5,7 @@ let rooms = JSON.parse(localStorage.getItem("rooms")) || [
   "Muddy Puddles", "Candy Land", "Jenga Den"
 ];
 
-// Checklist items (only two checkboxes)
+// Checklist items
 const checklistItems = ["Office supplies", "Technology"];
 
 const roomList = document.getElementById('roomList');
@@ -14,6 +14,7 @@ const roomTitle = document.getElementById('roomTitle');
 const notesContainer = document.getElementById('notesContainer');
 const notesInput = document.getElementById('notes');
 const todayDateEl = document.getElementById('todayDate');
+const saveBtn = document.getElementById('saveBtn');
 
 let currentRoom = null;
 
@@ -103,6 +104,7 @@ function setupRoomList() {
   });
 }
 
+// ➕ Add room
 document.getElementById("addRoomBtn").addEventListener("click", () => {
   const newRoom = prompt("Enter new room name:");
   if (newRoom && !rooms.includes(newRoom)) {
@@ -112,6 +114,7 @@ document.getElementById("addRoomBtn").addEventListener("click", () => {
   }
 });
 
+// ➖ Delete room
 document.getElementById("deleteRoomBtn").addEventListener("click", () => {
   if (!currentRoom) {
     alert("Please select a room to delete.");
@@ -129,5 +132,6 @@ document.getElementById("deleteRoomBtn").addEventListener("click", () => {
   }
 });
 
-// ✅ Initialize
-setupRoomList();
+// ✅ Export to Excel
+saveBtn.addEventListener("click", () => {
+  const wb = XLSX.utils.book_new();
