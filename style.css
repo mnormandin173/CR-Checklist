@@ -14,7 +14,6 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .sidebar h2 {
@@ -33,29 +32,27 @@ body {
   border-bottom: 1px solid #444;
 }
 
-.sidebar li:hover,
-.sidebar li.active {
+.sidebar li:hover, .sidebar li.active {
   background: #555;
 }
 
-.sidebar-buttons {
-  margin-top: 1rem;
+.sidebar .sidebar-buttons {
+  margin-top: auto;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  gap: 10px;
 }
 
-.sidebar-buttons button {
+.sidebar .sidebar-buttons button {
+  flex: 1;
   padding: 8px;
-  font-size: 14px;
-  cursor: pointer;
   border: none;
-  border-radius: 5px;
   background: #555;
   color: white;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
-.sidebar-buttons button:hover {
+.sidebar .sidebar-buttons button:hover {
   background: #777;
 }
 
@@ -100,6 +97,7 @@ input[type="checkbox"] {
   font-family: Arial, sans-serif;
 }
 
+/* Floating save button */
 .save-btn {
   position: fixed;
   bottom: 20px;
@@ -110,11 +108,13 @@ input[type="checkbox"] {
   border-radius: 50%;
   width: 60px;
   height: 60px;
-  font-size: 24px;
+  font-size: 26px;
   cursor: pointer;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-}
 
-.save-btn:hover {
-  background: #218838;
+  display: flex;           /* centers content */
+  align-items: center;     /* vertical center */
+  justify-content: center; /* horizontal center */
+  line-height: 1;          /* fixes vertical spacing */
+  padding: 0;              /* prevents shifting */
 }
