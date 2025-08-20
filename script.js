@@ -1,10 +1,11 @@
-const rooms = [
+let rooms = JSON.parse(localStorage.getItem("rooms")) || [
   "Creative Dev Studio", "Hasbro Brand", "Twister", "Monopoly", "Sorry!", "Clue", "Megatron", "Magic",
   "Tonka Truck", "Chance", "Piggy Bank", "University of Play", "Dugout", "HTO Command Center",
   "Peppa Pig", "Mr. Potato Head", "Fun Factory", "Playskool Meet'n Room", "Tinker Tank", 
   "Muddy Puddles", "Candy Land", "Jenga Den"
 ];
 
+// Checklist items (only two checkboxes)
 const checklistItems = ["Office supplies", "Technology"];
 
 const roomList = document.getElementById('roomList');
@@ -12,43 +13,53 @@ const checklist = document.getElementById('checklist');
 const roomTitle = document.getElementById('roomTitle');
 const notesContainer = document.getElementById('notesContainer');
 const notesInput = document.getElementById('notes');
-const saveBtn = document.getElementById('saveBtn');
-const todayDateDisplay = document.getElementById('todayDate');
+const todayDateEl = document.getElementById('todayDate');
 
 let currentRoom = null;
 
-function getTodayDate() {
-  return new Date().toISOString().split('T')[0];
+function getTodayFormatted() {
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return new Date().toLocaleDateString(undefined, options);
 }
 
-function getTodayData() {
-  const today = getTodayDate();
-  return JSON.parse(localStorage.getItem(today)) || {};
+todayDateEl.textContent = getTodayFormatted();
+
+function getTodayDateKey() {
+  return new Date().toISOString().split("T")[0];
 }
 
-function saveTodayData(data) {
-  const today = getTodayDate();
-  localStorage.setItem(today, JSON.stringify(data));
+function resetIfNewDay(roomKey) {
+  const lastDate = localStorage.getItem(`${roomKey}_date`);
+  const today = getTodayDateKey();
+  if (lastDate !== today) {
+    localStorage.setItem(`${roomKey}_date`, today);
+    localStorage.removeItem(`${roomKey}_tasks`);
+    localStorage.removeItem(`${roomKey}_notes`);
+  }
 }
 
-function saveRoomData(roomKey, tasks, notes) {
-  const todayData = getTodayData();
-  todayData[roomKey] = { tasks, notes };
-  saveTodayData(todayData);
+function saveTasks(roomKey, tasks) {
+  localStorage.setItem(`${roomKey}_tasks`, JSON.stringify(tasks));
+}
+
+function saveNotes(roomKey, notes) {
+  localStorage.setItem(`${roomKey}_notes`, notes);
 }
 
 function loadRoom(roomName) {
   currentRoom = roomName;
-  const roomKey = roomName.replace(/\s+/g, '_');
-  const todayData = getTodayData();
+  const roomKey = roomName.replace(/\s+/g, "_");
 
+  // Highlight active room
   document.querySelectorAll('#roomList li').forEach(li => {
     li.classList.toggle('active', li.textContent === roomName);
   });
 
+  resetIfNewDay(roomKey);
   roomTitle.textContent = roomName;
 
-  const savedRoom = todayData[roomKey] || { tasks: {}, notes: "" };
+  // Load saved checklist state
+  const savedTasks = JSON.parse(localStorage.getItem(`${roomKey}_tasks`)) || {};
   checklist.innerHTML = '';
 
   checklistItems.forEach((item, index) => {
@@ -56,11 +67,11 @@ function loadRoom(roomName) {
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = `task-${index}`;
-    checkbox.checked = savedRoom.tasks[index] || false;
+    checkbox.checked = savedTasks[index] || false;
 
     checkbox.addEventListener('change', () => {
-      savedRoom.tasks[index] = checkbox.checked;
-      saveRoomData(roomKey, savedRoom.tasks, notesInput.value);
+      savedTasks[index] = checkbox.checked;
+      saveTasks(roomKey, savedTasks);
     });
 
     const label = document.createElement('label');
@@ -72,15 +83,18 @@ function loadRoom(roomName) {
     checklist.appendChild(li);
   });
 
+  // Show notes field
   notesContainer.style.display = 'block';
-  notesInput.value = savedRoom.notes;
+  const savedNotes = localStorage.getItem(`${roomKey}_notes`) || '';
+  notesInput.value = savedNotes;
 
   notesInput.oninput = () => {
-    saveRoomData(roomKey, savedRoom.tasks, notesInput.value);
+    saveNotes(roomKey, notesInput.value);
   };
 }
 
 function setupRoomList() {
+  roomList.innerHTML = '';
   rooms.forEach(room => {
     const li = document.createElement('li');
     li.textContent = room;
@@ -89,33 +103,31 @@ function setupRoomList() {
   });
 }
 
-// Mobile-friendly CSV export
-saveBtn.addEventListener('click', () => {
-  const today = getTodayDate();
-  const data = getTodayData();
-
-  let csv = ['Room Name', ...checklistItems, 'Notes'].join(',') + '\n';
-
-  rooms.forEach(room => {
-    const roomKey = room.replace(/\s+/g, '_');
-    const roomData = data[roomKey] || { tasks: {}, notes: '' };
-    const row = [
-      `"${room}"`,
-      ...checklistItems.map((_, idx) => roomData.tasks[idx] ? 'X' : ' '),
-      `"${roomData.notes.replace(/"/g,'""')}"`
-    ];
-    csv += row.join(',') + '\n';
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `${today}_checklist.csv`;
-  link.click();
+document.getElementById("addRoomBtn").addEventListener("click", () => {
+  const newRoom = prompt("Enter new room name:");
+  if (newRoom && !rooms.includes(newRoom)) {
+    rooms.push(newRoom);
+    localStorage.setItem("rooms", JSON.stringify(rooms));
+    setupRoomList();
+  }
 });
 
-// Show today's date at top of sidebar
-todayDateDisplay.textContent = getTodayDate();
+document.getElementById("deleteRoomBtn").addEventListener("click", () => {
+  if (!currentRoom) {
+    alert("Please select a room to delete.");
+    return;
+  }
+  const confirmDelete = confirm(`Delete room "${currentRoom}"?`);
+  if (confirmDelete) {
+    rooms = rooms.filter(r => r !== currentRoom);
+    localStorage.setItem("rooms", JSON.stringify(rooms));
+    currentRoom = null;
+    roomTitle.textContent = "Select a Room";
+    checklist.innerHTML = "";
+    notesContainer.style.display = "none";
+    setupRoomList();
+  }
+});
 
-// Build room list
+// ✅ Initialize
 setupRoomList();
