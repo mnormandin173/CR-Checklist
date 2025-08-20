@@ -1,37 +1,35 @@
-let rooms = JSON.parse(localStorage.getItem("rooms")) || [
+const rooms = [
   "Creative Dev Studio", "Hasbro Brand", "Twister", "Monopoly", "Sorry!", "Clue", "Megatron", "Magic",
   "Tonka Truck", "Chance", "Piggy Bank", "University of Play", "Dugout", "HTO Command Center",
   "Peppa Pig", "Mr. Potato Head", "Fun Factory", "Playskool Meet'n Room", "Tinker Tank", 
   "Muddy Puddles", "Candy Land", "Jenga Den"
 ];
 
-// Checklist items
-const checklistItems = ["Office supplies", "Technology"];
+const checklistItems = [
+  "Office supplies",
+  "Technology"
+];
 
 const roomList = document.getElementById('roomList');
 const checklist = document.getElementById('checklist');
 const roomTitle = document.getElementById('roomTitle');
 const notesContainer = document.getElementById('notesContainer');
 const notesInput = document.getElementById('notes');
-const todayDateEl = document.getElementById('todayDate');
 const saveBtn = document.getElementById('saveBtn');
+const addRoomBtn = document.getElementById('addRoomBtn');
+const deleteRoomBtn = document.getElementById('deleteRoomBtn');
 
 let currentRoom = null;
 
-function getTodayFormatted() {
+function getTodayDate() {
+  const today = new Date();
   const options = { year: "numeric", month: "long", day: "numeric" };
-  return new Date().toLocaleDateString(undefined, options);
-}
-
-todayDateEl.textContent = getTodayFormatted();
-
-function getTodayDateKey() {
-  return new Date().toISOString().split("T")[0];
+  return today.toLocaleDateString(undefined, options);
 }
 
 function resetIfNewDay(roomKey) {
   const lastDate = localStorage.getItem(`${roomKey}_date`);
-  const today = getTodayDateKey();
+  const today = new Date().toISOString().split('T')[0];
   if (lastDate !== today) {
     localStorage.setItem(`${roomKey}_date`, today);
     localStorage.removeItem(`${roomKey}_tasks`);
@@ -49,7 +47,7 @@ function saveNotes(roomKey, notes) {
 
 function loadRoom(roomName) {
   currentRoom = roomName;
-  const roomKey = roomName.replace(/\s+/g, "_");
+  const roomKey = roomName.replace(/\s+/g, '_');
 
   document.querySelectorAll('#roomList li').forEach(li => {
     li.classList.toggle('active', li.textContent === roomName);
@@ -92,7 +90,12 @@ function loadRoom(roomName) {
 }
 
 function setupRoomList() {
-  roomList.innerHTML = '';
+  const dateLi = document.createElement('li');
+  dateLi.textContent = getTodayDate();
+  dateLi.style.fontWeight = "bold";
+  dateLi.style.textAlign = "center";
+  roomList.appendChild(dateLi);
+
   rooms.forEach(room => {
     const li = document.createElement('li');
     li.textContent = room;
@@ -101,72 +104,17 @@ function setupRoomList() {
   });
 }
 
-// ➕ Add room
-document.getElementById("addRoomBtn").addEventListener("click", () => {
-  const newRoom = prompt("Enter new room name:");
-  if (newRoom && !rooms.includes(newRoom)) {
-    rooms.push(newRoom);
-    localStorage.setItem("rooms", JSON.stringify(rooms));
-    setupRoomList();
-  }
-});
+function exportToExcel() {
+  const today = new Date().toISOString().split('T')[0];
+  const data = [];
 
-// ➖ Delete room
-document.getElementById("deleteRoomBtn").addEventListener("click", () => {
-  if (!currentRoom) {
-    alert("Please select a room to delete.");
-    return;
-  }
-  const confirmDelete = confirm(`Delete room "${currentRoom}"?`);
-  if (confirmDelete) {
-    rooms = rooms.filter(r => r !== currentRoom);
-    localStorage.setItem("rooms", JSON.stringify(rooms));
-    currentRoom = null;
-    roomTitle.textContent = "Select a Room";
-    checklist.innerHTML = "";
-    notesContainer.style.display = "none";
-    setupRoomList();
-  }
-});
-
-// ✅ Export to Excel
-saveBtn.addEventListener("click", () => {
-  const wb = XLSX.utils.book_new();
-  const ws_data = [["Room", ...checklistItems, "Notes"]];
+  const header = ["Room", ...checklistItems, "Notes"];
+  data.push(header);
 
   rooms.forEach(room => {
-    const roomKey = room.replace(/\s+/g, "_");
+    const roomKey = room.replace(/\s+/g, '_');
     const savedTasks = JSON.parse(localStorage.getItem(`${roomKey}_tasks`)) || {};
     const savedNotes = localStorage.getItem(`${roomKey}_notes`) || "";
 
     const row = [room];
-    checklistItems.forEach((_, i) => {
-      row.push(savedTasks[i] ? "✅" : "❌");
-    });
-    row.push(savedNotes);
-    ws_data.push(row);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-  // Format header (bold)
-  checklistItems.forEach((_, i) => {
-    const cellRef = XLSX.utils.encode_cell({ r: 0, c: i + 1 });
-    if (!ws[cellRef]) ws[cellRef] = { t: "s", v: checklistItems[i] };
-    ws[cellRef].s = { font: { bold: true } };
-  });
-  ws["A1"].s = { font: { bold: true } };
-  ws[XLSX.utils.encode_cell({ r: 0, c: checklistItems.length + 1 })].s = { font: { bold: true } };
-
-  // Auto column widths
-  const colWidths = ws_data[0].map((_, colIndex) =>
-    Math.max(...ws_data.map(row => (row[colIndex] ? row[colIndex].toString().length : 0))) + 2
-  );
-  ws["!cols"] = colWidths.map(w => ({ wch: w }));
-
-  XLSX.utils.book_append_sheet(wb, ws, "Checklist");
-  XLSX.writeFile(wb, `${getTodayDateKey()}_Checklist.xlsx`);
-});
-
-// ✅ Initialize
-setupRoomList();
+    checklistItems
